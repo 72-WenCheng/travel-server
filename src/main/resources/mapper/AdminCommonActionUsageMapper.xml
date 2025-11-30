@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.admin.mapper.AdminCommonActionUsageMapper">
+
+    <resultMap id="BaseResultMap" type="com.zhly.admin.entity.AdminCommonActionUsage">
+        <id column="id" property="id"/>
+        <result column="admin_id" property="adminId"/>
+        <result column="action_code" property="actionCode"/>
+        <result column="action_name" property="actionName"/>
+        <result column="action_path" property="actionPath"/>
+        <result column="action_icon" property="actionIcon"/>
+        <result column="action_desc" property="actionDesc"/>
+        <result column="click_count" property="clickCount"/>
+        <result column="last_click_time" property="lastClickTime"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <insert id="upsertUsage">
+        INSERT INTO admin_common_action_usage
+        (admin_id, action_code, action_name, action_path, action_icon, action_desc, click_count, last_click_time)
+        VALUES
+        (#{adminId}, #{actionCode}, #{actionName}, #{actionPath}, #{actionIcon}, #{actionDesc}, 1, NOW())
+        ON DUPLICATE KEY UPDATE
+        action_name = VALUES(action_name),
+        action_path = VALUES(action_path),
+        action_icon = VALUES(action_icon),
+        action_desc = VALUES(action_desc),
+        click_count = click_count + 1,
+        last_click_time = NOW()
+    </insert>
+
+    <select id="selectTopActions" resultMap="BaseResultMap">
+        SELECT
+            id, admin_id, action_code, action_name, action_path, action_icon,
+            action_desc, click_count, last_click_time, create_time
+        FROM admin_common_action_usage
+        WHERE admin_id = #{adminId}
+        ORDER BY click_count DESC, last_click_time DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>
+
+

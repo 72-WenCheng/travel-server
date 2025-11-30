@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.UserOperationLogMapper">
+
+    <!-- 获取用户操作日志（分页） -->
+    <select id="selectUserOperationLogs" resultType="java.util.Map">
+        SELECT 
+            uol.id,
+            uol.user_id as userId,
+            u.username as operator,
+            uol.operation_type as operationType,
+            uol.operation_module as operationModule,
+            uol.operation_content as operationContent,
+            uol.operation_ip as operationIp,
+            uol.operation_time as operationTime,
+            uol.status,
+            uol.remark,
+            uol.create_time as createTime
+        FROM user_operation_log uol
+        LEFT JOIN sys_user u ON uol.user_id = u.id
+        WHERE uol.user_id = #{userId}
+        ORDER BY uol.operation_time DESC
+        LIMIT ${(page - 1) * size}, #{size}
+    </select>
+    
+    <!-- 获取系统操作日志（分页，不限制用户） -->
+    <select id="selectSystemOperationLogs" resultType="java.util.Map">
+        SELECT 
+            uol.id,
+            uol.user_id as userId,
+            COALESCE(u.username, u.nickname, '系统') as operator,
+            uol.operation_type as operationType,
+            uol.operation_module as operationModule,
+            uol.operation_content as operationContent,
+            uol.operation_ip as operationIp,
+            uol.operation_time as operationTime,
+            uol.status,
+            uol.remark,
+            uol.create_time as createTime
+        FROM user_operation_log uol
+        LEFT JOIN sys_user u ON uol.user_id = u.id
+        ORDER BY uol.operation_time DESC
+        LIMIT ${(page - 1) * size}, #{size}
+    </select>
+    
+    <!-- 获取系统操作日志总数 -->
+    <select id="selectSystemOperationLogsCount" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM user_operation_log
+    </select>
+
+</mapper>
+

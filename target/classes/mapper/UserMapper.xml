@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.UserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.zhly.entity.User">
+        <id column="id" property="id" />
+        <result column="username" property="username" />
+        <result column="password" property="password" />
+        <result column="nickname" property="nickname" />
+        <result column="avatar" property="avatar" />
+        <result column="email" property="email" />
+        <result column="phone" property="phone" />
+        <result column="gender" property="gender" />
+        <result column="age" property="age" />
+        <result column="role" property="role" />
+        <!-- level_id 和 points 字段已移除，不再映射 -->
+        <result column="user_type" property="userType" />
+        <result column="travel_preference" property="travelPreference" />
+        <result column="interest_tags" property="interestTags" />
+        <result column="frequent_cities" property="frequentCities" />
+        <result column="status" property="status" />
+        <result column="login_count" property="loginCount" />
+        <result column="last_login_time" property="lastLoginTime" />
+        <result column="last_login_ip" property="lastLoginIp" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="deleted" property="deleted" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, username, password, nickname, avatar, email, phone, gender, age, role, 
+        user_type, travel_preference, interest_tags, frequent_cities, status, login_count, 
+        last_login_time, last_login_ip, create_time, update_time, deleted
+    </sql>
+
+    <!-- 获取用户统计信息 -->
+    <select id="selectUserStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as total,
+            COUNT(CASE WHEN status = 1 THEN 1 END) as active,
+            COUNT(CASE WHEN status = 0 THEN 1 END) as inactive,
+            COUNT(CASE WHEN create_time >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 END) as newUsers,
+            COUNT(CASE WHEN user_type = 2 THEN 1 END) as vipUsers,
+            COUNT(CASE WHEN DATE(create_time) = CURDATE() THEN 1 END) as todayNew
+        FROM sys_user
+        WHERE deleted = 0
+    </select>
+
+    <!-- 获取活跃用户列表 -->
+    <select id="selectActiveUsers" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM sys_user 
+        WHERE status = 1 
+        AND last_login_time >= DATE_SUB(NOW(), INTERVAL #{days} DAY)
+        ORDER BY last_login_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 获取用户标签统计 -->
+    <select id="selectUserTagStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as total,
+            COUNT(CASE WHEN interest_tags IS NOT NULL AND interest_tags != '' THEN 1 END) as withTags,
+            COUNT(CASE WHEN travel_preference IS NOT NULL THEN 1 END) as withPreference
+        FROM sys_user
+    </select>
+
+    <!-- 根据用户名查询用户 -->
+    <select id="selectByUsername" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM sys_user WHERE username = #{username}
+    </select>
+
+    <!-- 根据邮箱查询用户 -->
+    <select id="selectByEmail" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM sys_user WHERE email = #{email}
+    </select>
+
+    <!-- 更新用户最后登录时间 -->
+    <update id="updateLastLoginTime">
+        UPDATE sys_user 
+        SET last_login_time = NOW(), update_time = NOW()
+        WHERE id = #{userId}
+    </update>
+    
+    <!-- 更新用户最后登录信息（时间和IP） -->
+    <update id="updateLastLoginInfo">
+        UPDATE sys_user 
+        SET last_login_time = NOW(), 
+            last_login_ip = #{loginIp},
+            update_time = NOW()
+        WHERE id = #{userId}
+    </update>
+
+    <!-- 更新用户积分 -->
+    <!-- 注意：此方法已废弃，积分更新请使用 UserPointsService -->
+    <!-- 保留此方法仅为兼容性，但不会执行任何操作 -->
+    <update id="updateUserPoints">
+        UPDATE sys_user 
+        SET update_time = NOW()
+        WHERE id = #{userId}
+    </update>
+
+    <!-- 获取用户推荐内容 -->
+    <select id="selectUserRecommendations" resultType="java.util.Map">
+        SELECT 
+            u.id,
+            u.username,
+            u.nickname,
+            u.interest_tags,
+            u.travel_preference,
+            u.create_time
+        FROM sys_user u
+        WHERE u.id = #{userId}
+    </select>
+
+    <!-- 获取最新注册用户 -->
+    <select id="selectLatestUsers" resultMap="BaseResultMap">
+        SELECT id, nickname, avatar, create_time
+        FROM sys_user
+        ORDER BY create_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 获取每日用户增长数据 -->
+    <select id="selectDailyUserGrowth" resultType="java.util.Map">
+        SELECT 
+            DATE_FORMAT(create_time, '%Y-%m-%d') as date,
+            COUNT(*) as count
+        FROM sys_user
+        WHERE create_time >= DATE_SUB(NOW(), INTERVAL #{days} DAY)
+        GROUP BY DATE_FORMAT(create_time, '%Y-%m-%d')
+        ORDER BY date ASC
+    </select>
+
+    <!-- MyBatis Plus BaseMapper 方法由框架自动生成，不需要手动定义 -->
+
+</mapper>
+

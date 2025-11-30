@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.CultureBookingMapper">
+    
+    <resultMap id="BaseResultMap" type="com.zhly.entity.CultureBooking">
+        <id column="id" property="id" />
+        <result column="booking_no" property="bookingNo" />
+        <result column="user_id" property="userId" />
+        <result column="booking_type" property="bookingType" />
+        <result column="item_id" property="itemId" />
+        <result column="item_name" property="itemName" />
+        <result column="item_image" property="itemImage" />
+        <result column="package_id" property="packageId" />
+        <result column="package_name" property="packageName" />
+        <result column="booking_date" property="bookingDate" />
+        <result column="booking_time" property="bookingTime" />
+        <result column="people_count" property="peopleCount" />
+        <result column="contact_name" property="contactName" />
+        <result column="contact_phone" property="contactPhone" />
+        <result column="contact_id_card" property="contactIdCard" />
+        <result column="price" property="price" />
+        <result column="total_amount" property="totalAmount" />
+        <result column="special_requirements" property="specialRequirements" />
+        <result column="status" property="status" />
+        <result column="confirm_time" property="confirmTime" />
+        <result column="complete_time" property="completeTime" />
+        <result column="cancel_time" property="cancelTime" />
+        <result column="cancel_reason" property="cancelReason" />
+        <result column="refund_time" property="refundTime" />
+        <result column="refund_amount" property="refundAmount" />
+        <result column="payment_status" property="paymentStatus" />
+        <result column="payment_time" property="paymentTime" />
+        <result column="payment_no" property="paymentNo" />
+        <result column="remark" property="remark" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+    
+    <select id="selectBookingPage" resultMap="BaseResultMap">
+        SELECT * FROM culture_booking
+        <where>
+            <if test="bookingNo != null and bookingNo != ''">
+                AND booking_no LIKE CONCAT('%', #{bookingNo}, '%')
+            </if>
+            <if test="bookingType != null">
+                AND booking_type = #{bookingType}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+    
+    <select id="selectBookingListForExport" resultMap="BaseResultMap">
+        SELECT * FROM culture_booking
+        <where>
+            <if test="bookingNo != null and bookingNo != ''">
+                AND booking_no LIKE CONCAT('%', #{bookingNo}, '%')
+            </if>
+            <if test="bookingType != null">
+                AND booking_type = #{bookingType}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+    
+</mapper>
+

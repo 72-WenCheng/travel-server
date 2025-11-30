@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.CommentMapper">
+
+    <!-- 查询顶级评论列表（带用户信息和点赞状态） -->
+    <select id="selectTopComments" resultType="com.zhly.entity.Comment">
+        SELECT 
+            c.*,
+            COALESCE(u.nickname, u.username) as username,
+            u.avatar,
+            COALESCE(up.total_points, 0) as userPoints,
+            CASE WHEN cl.id IS NOT NULL THEN 1 ELSE 0 END as hasLiked,
+            (
+                CASE 
+                    WHEN c.content_type = 'PLAN' AND EXISTS (
+                        SELECT 1 FROM travel_plan tp 
+                        WHERE tp.id = c.content_id AND tp.author_id = c.user_id
+                    ) THEN 1
+                    ELSE 0
+                END
+            ) as isAuthor
+        FROM comment c
+        LEFT JOIN sys_user u ON c.user_id = u.id
+        LEFT JOIN user_points up ON u.id = up.user_id
+        LEFT JOIN comment_like cl ON c.id = cl.comment_id AND cl.user_id = #{userId}
+        WHERE c.content_type = #{contentType} 
+          AND c.content_id = #{contentId}
+          AND c.parent_id IS NULL
+          AND c.status = 'PUBLISHED'
+        ORDER BY c.is_top DESC, c.is_hot DESC, c.like_count DESC, c.created_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询回复列表（带用户信息和点赞状态） -->
+    <select id="selectReplies" resultType="com.zhly.entity.Comment">
+        SELECT 
+            c.*,
+            COALESCE(u.nickname, u.username) as username,
+            u.avatar,
+            COALESCE(up.total_points, 0) as userPoints,
+            COALESCE(ru.nickname, ru.username) as replyToUsername,
+            CASE WHEN cl.id IS NOT NULL THEN 1 ELSE 0 END as hasLiked,
+            (
+                CASE 
+                    WHEN c.content_type = 'PLAN' AND EXISTS (
+                        SELECT 1 FROM travel_plan tp 
+                        WHERE tp.id = c.content_id AND tp.author_id = c.user_id
+                    ) THEN 1
+                    ELSE 0
+                END
+            ) as isAuthor
+        FROM comment c
+        LEFT JOIN sys_user u ON c.user_id = u.id
+        LEFT JOIN user_points up ON u.id = up.user_id
+        LEFT JOIN sys_user ru ON c.reply_to_user_id = ru.id
+        LEFT JOIN comment_like cl ON c.id = cl.comment_id AND cl.user_id = #{userId}
+        WHERE c.parent_id = #{parentId}
+          AND c.status = 'PUBLISHED'
+        ORDER BY c.created_time ASC
+    </select>
+
+    <!-- 查询用户的评论列表（带内容标题） -->
+    <select id="selectUserComments" resultType="com.zhly.entity.Comment">
+        SELECT 
+            c.*,
+            CASE c.content_type
+                WHEN 'PLAN' THEN (SELECT title FROM travel_plan WHERE id = c.content_id)
+                WHEN 'ATTRACTION' THEN (SELECT name FROM attraction WHERE id = c.content_id)
+                WHEN 'CULTURE' THEN (SELECT name FROM culture_project WHERE id = c.content_id)
+                ELSE '未知内容'
+            END as contentTitle
+        FROM comment c
+        WHERE c.user_id = #{userId}
+          AND c.status = 'PUBLISHED'
+        ORDER BY c.created_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 增加评论的点赞数 -->
+    <update id="increaseLikeCount">
+        UPDATE comment 
+        SET like_count = like_count + 1,
+            is_hot = CASE WHEN like_count + 1 &gt;= 50 THEN 1 ELSE is_hot END
+        WHERE id = #{commentId}
+    </update>
+
+    <!-- 减少评论的点赞数 -->
+    <update id="decreaseLikeCount">
+        UPDATE comment 
+        SET like_count = GREATEST(like_count - 1, 0),
+            is_hot = CASE WHEN like_count - 1 &lt; 50 THEN 0 ELSE is_hot END
+        WHERE id = #{commentId}
+    </update>
+
+    <!-- 增加评论的回复数 -->
+    <update id="increaseReplyCount">
+        UPDATE comment 
+        SET reply_count = reply_count + 1
+        WHERE id = #{commentId}
+    </update>
+
+    <!-- 减少评论的回复数 -->
+    <update id="decreaseReplyCount">
+        UPDATE comment 
+        SET reply_count = GREATEST(reply_count - 1, 0)
+        WHERE id = #{commentId}
+    </update>
+
+    <!-- 更新内容的评论数 -->
+    <update id="updateContentCommentCount">
+        <if test="contentType == 'PLAN'">
+            UPDATE travel_plan 
+            SET comment_count = (
+                SELECT COUNT(*) FROM comment 
+                WHERE content_type = 'PLAN' 
+                  AND content_id = #{contentId} 
+                  AND status = 'PUBLISHED'
+            )
+            WHERE id = #{contentId}
+        </if>
+        <if test="contentType == 'ATTRACTION'">
+            UPDATE attraction 
+            SET comment_count = (
+                SELECT COUNT(*) FROM comment 
+                WHERE content_type = 'ATTRACTION' 
+                  AND content_id = #{contentId} 
+                  AND status = 'PUBLISHED'
+            )
+            WHERE id = #{contentId}
+        </if>
+        <if test="contentType == 'CULTURE'">
+            UPDATE culture_project 
+            SET comment_count = (
+                SELECT COUNT(*) FROM comment 
+                WHERE content_type = 'CULTURE' 
+                  AND content_id = #{contentId} 
+                  AND status = 'PUBLISHED'
+            )
+            WHERE id = #{contentId}
+        </if>
+    </update>
+
+</mapper>

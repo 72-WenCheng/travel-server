@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.OrderMapper">
+
+    <!-- 获取用户订单列表 -->
+    <select id="selectUserOrders" resultType="com.zhly.entity.Order">
+        SELECT * FROM `order` 
+        WHERE user_id = #{userId}
+        <if test="orderStatus != null">
+            AND order_status = #{orderStatus}
+        </if>
+        ORDER BY create_time DESC
+        LIMIT #{page}, #{size}
+    </select>
+
+    <!-- 获取订单统计 -->
+    <select id="selectOrderStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as total,
+            COUNT(CASE WHEN order_status = 0 THEN 1 END) as pending,
+            COUNT(CASE WHEN order_status = 1 THEN 1 END) as paid,
+            COUNT(CASE WHEN order_status = 2 THEN 1 END) as completed,
+            COUNT(CASE WHEN order_status = 3 THEN 1 END) as cancelled,
+            SUM(CASE WHEN order_status = 1 OR order_status = 2 THEN total_amount ELSE 0 END) as totalAmount,
+            AVG(CASE WHEN order_status = 1 OR order_status = 2 THEN total_amount ELSE NULL END) as avgAmount
+        FROM `order`
+    </select>
+
+    <!-- 获取用户订单统计 -->
+    <select id="selectUserOrderStats" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as total,
+            COUNT(CASE WHEN order_status = 0 THEN 1 END) as pending,
+            COUNT(CASE WHEN order_status = 1 THEN 1 END) as paid,
+            COUNT(CASE WHEN order_status = 2 THEN 1 END) as completed,
+            COUNT(CASE WHEN order_status = 3 THEN 1 END) as cancelled,
+            SUM(CASE WHEN order_status = 1 OR order_status = 2 THEN total_amount ELSE 0 END) as totalAmount,
+            AVG(CASE WHEN order_status = 1 OR order_status = 2 THEN total_amount ELSE NULL END) as avgAmount
+        FROM `order`
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 更新订单状态 -->
+    <update id="updateOrderStatus">
+        UPDATE `order` 
+        SET order_status = #{orderStatus}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+</mapper>
+
+
+
+
+
+

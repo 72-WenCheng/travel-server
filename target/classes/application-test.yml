@@ -1,0 +1,93 @@
+# ============================================
+# 测试环境配置 (application-test.yml)
+# ============================================
+# 启动方式：
+# 1. IDE启动参数：-Dspring.profiles.active=test
+# 2. 环境变量：export SPRING_PROFILES_ACTIVE=test
+# ============================================
+
+spring:
+  # 数据源配置 - 测试数据库
+  datasource:
+    url: jdbc:mysql://test-db-host:3306/travel_db_test?useUnicode=true&characterEncoding=utf8&useSSL=true&serverTimezone=Asia/Shanghai
+    username: ${DB_USERNAME:test_user}
+    password: ${DB_PASSWORD:test_password}
+    
+    # Druid监控 - 测试环境禁用
+    druid:
+      web-stat-filter:
+        enabled: false
+      stat-view-servlet:
+        enabled: false
+  
+  # Redis配置 - 测试服务器
+  data:
+    redis:
+      host: ${REDIS_HOST:test-redis-host}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:test_redis_password}
+  
+  # 邮件配置 - 测试邮箱
+  mail:
+    host: smtp.qq.com
+    port: 587
+    username: ${MAIL_USERNAME:test-email@qq.com}  # ⚠️ 需要配置真实测试邮箱
+    password: ${MAIL_PASSWORD:test-auth-code}  # ⚠️ 需要配置测试邮箱授权码
+
+# 日志配置 - 测试环境标准日志
+logging:
+  level:
+    com.zhly: info
+    org.springframework: warn
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n'
+
+# 业务配置
+travel:
+  # 前端域名 - 测试环境域名
+  frontend:
+    url: ${FRONTEND_URL:https://test.your-domain.com}  # ⚠️ 需要配置测试环境域名
+  
+  # JWT配置
+  jwt:
+    secret: ${JWT_SECRET:test-secret-key-for-jwt-hmac-sha256-algorithm-minimum-32-chars}
+    expiration: 86400000  # 24小时
+
+# AI配置 - 测试环境使用真实Key
+ai:
+  api:
+    url: https://api.openai.com/v1/chat/completions
+    key: ${AI_API_KEY:your-test-openai-api-key}  # ⚠️ 需要配置测试Key
+  model:
+    name: gpt-3.5-turbo
+  max:
+    tokens: 1000
+  temperature: 0.7
+  timeout: 30000
+
+# 第三方API配置 - 测试环境使用真实Key
+third-party:
+  weather:
+    api:
+      url: https://api.openweathermap.org/data/2.5/weather
+      key: ${WEATHER_API_KEY:your-test-weather-api-key}  # ⚠️ 需要配置测试Key
+  amap:
+    api:
+      url: https://restapi.amap.com
+      key: ${AMAP_API_KEY:your-test-amap-api-key}  # ⚠️ 需要配置测试Key
+  12306:
+    api:
+      url: https://kyfw.12306.cn
+  timeout: 10000
+
+# ============================================
+# 测试环境特性说明：
+# ============================================
+# 1. 使用测试环境的数据库和Redis
+# 2. 使用真实邮箱发送（需要配置）
+# 3. 使用标准日志级别
+# 4. 使用测试环境域名
+# 5. 使用测试用的API Key
+# 6. ⚠️ 需要替换所有标记为"需要配置"的项
+# ============================================
+

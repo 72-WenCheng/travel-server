@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.HotRecommendationMapper">
+    
+    <resultMap id="BaseResultMap" type="com.zhly.entity.HotRecommendation">
+        <id column="id" property="id" />
+        <result column="recommend_type" property="recommendType" />
+        <result column="item_type" property="itemType" />
+        <result column="item_id" property="itemId" />
+        <result column="title" property="title" />
+        <result column="subtitle" property="subtitle" />
+        <result column="cover_image" property="coverImage" />
+        <result column="tags" property="tags" />
+        <result column="score" property="score" />
+        <result column="display_order" property="displayOrder" />
+        <result column="start_time" property="startTime" />
+        <result column="end_time" property="endTime" />
+        <result column="status" property="status" />
+        <result column="click_count" property="clickCount" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+    
+    <!-- 根据推荐类型获取推荐列表 -->
+    <select id="selectByRecommendType" resultMap="BaseResultMap">
+        SELECT * FROM hot_recommendation
+        WHERE recommend_type = #{recommendType}
+        AND status = 1
+        AND (start_time IS NULL OR start_time &lt;= NOW())
+        AND (end_time IS NULL OR end_time &gt;= NOW())
+        ORDER BY display_order ASC, click_count DESC
+    </select>
+    
+</mapper>
+
+
+
+
+
+
+

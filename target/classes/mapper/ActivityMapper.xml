@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.ActivityMapper">
+    
+    <resultMap id="BaseResultMap" type="com.zhly.entity.Activity">
+        <id column="id" property="id" />
+        <result column="title" property="title" />
+        <result column="subtitle" property="subtitle" />
+        <result column="description" property="description" />
+        <result column="cover_image" property="coverImage" />
+        <result column="images" property="images" />
+        <result column="activity_type" property="activityType" />
+        <result column="start_time" property="startTime" />
+        <result column="end_time" property="endTime" />
+        <result column="location" property="location" />
+        <result column="related_type" property="relatedType" />
+        <result column="related_ids" property="relatedIds" />
+        <result column="discount_info" property="discountInfo" />
+        <result column="rules" property="rules" />
+        <result column="status" property="status" />
+        <result column="view_count" property="viewCount" />
+        <result column="participant_count" property="participantCount" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+    
+    <!-- 获取进行中的活动列表 -->
+    <select id="selectActiveActivities" resultMap="BaseResultMap">
+        SELECT * FROM activity
+        WHERE status = 1
+        AND start_time &lt;= NOW()
+        AND end_time &gt;= NOW()
+        ORDER BY create_time DESC
+    </select>
+    
+</mapper>
+
+
+
+
+
+
+

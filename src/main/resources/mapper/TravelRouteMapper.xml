@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.TravelRouteMapper">
+
+    <!-- 获取攻略的所有路线 -->
+    <select id="selectPlanRoutes" resultType="com.zhly.entity.TravelRoute">
+        SELECT * FROM travel_route 
+        WHERE plan_id = #{planId} 
+        ORDER BY day_number, order_number
+    </select>
+
+    <!-- 获取攻略某天的路线 -->
+    <select id="selectPlanDayRoutes" resultType="com.zhly.entity.TravelRoute">
+        SELECT * FROM travel_route 
+        WHERE plan_id = #{planId} AND day_number = #{dayNumber}
+        ORDER BY order_number
+    </select>
+
+    <!-- 获取路线统计 -->
+    <select id="selectRouteStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as total,
+            COUNT(CASE WHEN status = 1 THEN 1 END) as active,
+            COUNT(CASE WHEN status = 0 THEN 1 END) as inactive
+        FROM travel_route
+    </select>
+
+    <!-- 更新路线顺序 -->
+    <update id="updateRouteOrder">
+        UPDATE travel_route 
+        SET order_number = #{orderNumber}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 获取路线列表 -->
+    <select id="selectRouteList" resultType="com.zhly.entity.TravelRoute">
+        SELECT * FROM travel_route 
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (title LIKE CONCAT('%', #{keyword}, '%') 
+                     OR description LIKE CONCAT('%', #{keyword}, '%')
+                     OR start_location LIKE CONCAT('%', #{keyword}, '%')
+                     OR end_location LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="startCity != null and startCity != ''">
+                AND start_location LIKE CONCAT('%', #{startCity}, '%')
+            </if>
+            <if test="endCity != null and endCity != ''">
+                AND end_location LIKE CONCAT('%', #{endCity}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <!-- 获取路线总数 -->
+    <select id="selectRouteCount" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM travel_route 
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (title LIKE CONCAT('%', #{keyword}, '%') 
+                     OR description LIKE CONCAT('%', #{keyword}, '%')
+                     OR start_location LIKE CONCAT('%', #{keyword}, '%')
+                     OR end_location LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="startCity != null and startCity != ''">
+                AND start_location LIKE CONCAT('%', #{startCity}, '%')
+            </if>
+            <if test="endCity != null and endCity != ''">
+                AND end_location LIKE CONCAT('%', #{endCity}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
+</mapper>
+
+
+
+
+
+

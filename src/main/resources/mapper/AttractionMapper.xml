@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.AttractionMapper">
+
+    <!-- 获取景点列表 -->
+    <select id="selectAttractionList" resultType="com.zhly.entity.Attraction">
+        SELECT 
+            id, name, description, type, city, province, address,
+            phone, website, longitude, latitude, ticket_price as ticketPrice, open_time as openTime,
+            suggested_duration as suggestedDuration, rating, score,
+            cover_image as coverImage, images, tags, features, transportation,
+            nearby_food as nearbyFood, nearby_hotel as nearbyHotel, best_season as bestSeason, notes,
+            view_count as viewCount, collect_count as collectCount, comment_count as commentCount, status,
+            create_time as createTime, update_time as updateTime, deleted
+        FROM attraction 
+        <where>
+            AND (deleted IS NULL OR deleted = 0)
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') 
+                     OR description LIKE CONCAT('%', #{keyword}, '%')
+                     OR address LIKE CONCAT('%', #{keyword}, '%')
+                     OR tags LIKE CONCAT('%', #{keyword}, '%')
+                     OR (ticket_price IS NOT NULL AND CAST(ticket_price AS CHAR) LIKE CONCAT('%', #{keyword}, '%')))
+            </if>
+            <if test="city != null and city != ''">
+                AND (
+                    city = #{city} 
+                    OR city = CONCAT(#{city}, '市')
+                    OR city = CONCAT(#{city}, '省')
+                    OR city LIKE CONCAT(#{city}, '%')
+                    OR city LIKE CONCAT('%', #{city})
+                    OR city LIKE CONCAT('%', #{city}, '%')
+                    OR province LIKE CONCAT('%', #{city}, '%')
+                    OR address LIKE CONCAT('%', #{city}, '%')
+                )
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND DATE(create_time) &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND DATE(create_time) &lt;= #{endDate}
+            </if>
+        </where>
+        <choose>
+            <when test="city != null and city != ''">
+                ORDER BY view_count DESC, collect_count DESC
+            </when>
+            <otherwise>
+                ORDER BY create_time DESC
+            </otherwise>
+        </choose>
+        LIMIT ${(page - 1) * size}, #{size}
+    </select>
+
+    <!-- 获取景点总数 -->
+    <select id="selectAttractionCount" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM attraction 
+        <where>
+            AND (deleted IS NULL OR deleted = 0)
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') 
+                     OR description LIKE CONCAT('%', #{keyword}, '%')
+                     OR address LIKE CONCAT('%', #{keyword}, '%')
+                     OR tags LIKE CONCAT('%', #{keyword}, '%')
+                     OR (ticket_price IS NOT NULL AND CAST(ticket_price AS CHAR) LIKE CONCAT('%', #{keyword}, '%')))
+            </if>
+            <if test="city != null and city != ''">
+                AND (
+                    city = #{city} 
+                    OR city = CONCAT(#{city}, '市')
+                    OR city = CONCAT(#{city}, '省')
+                    OR city LIKE CONCAT(#{city}, '%')
+                    OR city LIKE CONCAT('%', #{city})
+                    OR city LIKE CONCAT('%', #{city}, '%')
+                    OR province LIKE CONCAT('%', #{city}, '%')
+                    OR address LIKE CONCAT('%', #{city}, '%')
+                )
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND DATE(create_time) &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND DATE(create_time) &lt;= #{endDate}
+            </if>
+        </where>
+    </select>
+
+    <!-- 获取热门景点 -->
+    <select id="selectHotAttractions" resultType="com.zhly.entity.Attraction">
+        SELECT * FROM attraction 
+        WHERE status = 1
+        ORDER BY view_count DESC, like_count DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 获取城市景点列表 -->
+    <select id="selectCityAttractions" resultType="com.zhly.entity.Attraction">
+        SELECT * FROM attraction 
+        WHERE city = #{city} AND status = 1
+        ORDER BY view_count DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 更新景点统计 -->
+    <update id="updateAttractionStats">
+        UPDATE attraction 
+        SET 
+        <choose>
+            <when test="type == 'view'">view_count = view_count + 1</when>
+            <when test="type == 'collect'">collect_count = collect_count + 1</when>
+        </choose>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 切换景点状态 -->
+    <update id="toggleAttractionStatus">
+        UPDATE attraction 
+        SET status = #{status}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 获取景点统计 -->
+    <select id="selectAttractionStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as total,
+            COUNT(CASE WHEN status = 1 THEN 1 END) as active,
+            COUNT(CASE WHEN status = 0 THEN 1 END) as inactive,
+            COUNT(CASE WHEN status = 2 THEN 1 END) as maintenance,
+            SUM(view_count) as totalViews,
+            AVG(rating) as avgRating
+        FROM attraction
+    </select>
+
+</mapper>
+
+
+
+
+
+

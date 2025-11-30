@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.UserBrowseHistoryMapper">
+    
+    <resultMap id="BaseResultMap" type="com.zhly.entity.UserBrowseHistory">
+        <id column="id" property="id" />
+        <result column="user_id" property="userId" />
+        <result column="browse_type" property="browseType" />
+        <result column="browse_id" property="browseId" />
+        <result column="browse_title" property="browseTitle" />
+        <result column="browse_image" property="browseImage" />
+        <result column="duration" property="duration" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+    
+    <!-- 获取用户最近浏览记录 -->
+    <select id="selectRecentByUserId" resultMap="BaseResultMap">
+        SELECT * FROM user_browse_history
+        WHERE user_id = #{userId}
+        ORDER BY create_time DESC
+        LIMIT #{limit}
+    </select>
+    
+</mapper>
+
+
+
+
+
+
+

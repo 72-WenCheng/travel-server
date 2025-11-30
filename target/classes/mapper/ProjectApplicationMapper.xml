@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.ProjectApplicationMapper">
+    
+    <resultMap id="BaseResultMap" type="com.zhly.entity.ProjectApplication">
+        <id column="id" property="id" />
+        <result column="application_no" property="applicationNo" />
+        <result column="user_id" property="userId" />
+        <result column="project_id" property="projectId" />
+        <result column="project_title" property="projectTitle" />
+        <result column="applicant_type" property="applicantType" />
+        <result column="applicant_name" property="applicantName" />
+        <result column="contact_name" property="contactName" />
+        <result column="contact_phone" property="contactPhone" />
+        <result column="contact_email" property="contactEmail" />
+        <result column="id_card" property="idCard" />
+        <result column="business_license" property="businessLicense" />
+        <result column="region" property="region" />
+        <result column="detailed_address" property="detailedAddress" />
+        <result column="land_area" property="landArea" />
+        <result column="household_count" property="householdCount" />
+        <result column="apply_amount" property="applyAmount" />
+        <result column="project_description" property="projectDescription" />
+        <result column="implementation_plan" property="implementationPlan" />
+        <result column="expected_benefits" property="expectedBenefits" />
+        <result column="attachment_urls" property="attachmentUrls" />
+        <result column="status" property="status" />
+        <result column="submit_time" property="submitTime" />
+        <result column="review_time" property="reviewTime" />
+        <result column="reviewer_id" property="reviewerId" />
+        <result column="review_opinion" property="reviewOpinion" />
+        <result column="reject_reason" property="rejectReason" />
+        <result column="approval_amount" property="approvalAmount" />
+        <result column="contract_no" property="contractNo" />
+        <result column="contract_sign_time" property="contractSignTime" />
+        <result column="project_start_time" property="projectStartTime" />
+        <result column="project_end_time" property="projectEndTime" />
+        <result column="remark" property="remark" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+    
+    <select id="selectApplicationPage" resultMap="BaseResultMap">
+        SELECT * FROM project_application
+        <where>
+            <if test="applicationNo != null and applicationNo != ''">
+                AND application_no LIKE CONCAT('%', #{applicationNo}, '%')
+            </if>
+            <if test="applicantType != null">
+                AND applicant_type = #{applicantType}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY submit_time DESC
+    </select>
+    
+    <select id="selectApplicationListForExport" resultMap="BaseResultMap">
+        SELECT * FROM project_application
+        <where>
+            <if test="applicationNo != null and applicationNo != ''">
+                AND application_no LIKE CONCAT('%', #{applicationNo}, '%')
+            </if>
+            <if test="applicantType != null">
+                AND applicant_type = #{applicantType}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="projectId != null">
+                AND project_id = #{projectId}
+            </if>
+        </where>
+        ORDER BY submit_time DESC
+    </select>
+    
+</mapper>
+

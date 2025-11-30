@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.CultureProjectMapper">
+
+    <!-- 获取文旅项目列表 -->
+    <select id="selectProjectList" resultType="com.zhly.entity.CultureProject">
+        SELECT * FROM culture_project 
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') 
+                     OR description LIKE CONCAT('%', #{keyword}, '%')
+                     OR region LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="region != null and region != ''">
+                AND region LIKE CONCAT('%', #{region}, '%')
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        LIMIT ${(page - 1) * size}, #{size}
+    </select>
+
+    <!-- 获取文旅项目总数 -->
+    <select id="selectProjectCount" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM culture_project 
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') 
+                     OR description LIKE CONCAT('%', #{keyword}, '%')
+                     OR region LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="region != null and region != ''">
+                AND region LIKE CONCAT('%', #{region}, '%')
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!-- 获取热门文旅项目 -->
+    <select id="selectHotProjects" resultType="com.zhly.entity.CultureProject">
+        SELECT * FROM culture_project 
+        WHERE status = 1
+        ORDER BY view_count DESC, like_count DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 获取地区文旅项目列表 -->
+    <select id="selectRegionProjects" resultType="com.zhly.entity.CultureProject">
+        SELECT * FROM culture_project 
+        WHERE region = #{region} AND status = 1
+        ORDER BY view_count DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 更新文旅项目统计 -->
+    <update id="updateProjectStats">
+        UPDATE culture_project 
+        SET 
+        <choose>
+            <when test="type == 'view'">view_count = view_count + 1</when>
+            <when test="type == 'like'">like_count = like_count + 1</when>
+            <when test="type == 'collect'">collect_count = collect_count + 1</when>
+            <when test="type == 'comment'">comment_count = comment_count + 1</when>
+        </choose>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 切换文旅项目状态 -->
+    <update id="toggleProjectStatus">
+        UPDATE culture_project 
+        SET status = #{status}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 获取文旅项目统计 -->
+    <select id="selectProjectStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalProjects,
+            COUNT(CASE WHEN status = 1 THEN 1 END) as activeProjects,
+            COALESCE(SUM(revenue), 0) as totalRevenue,
+            COALESCE(SUM(order_count), 0) as totalOrders,
+            COUNT(CASE WHEN type = 0 THEN 1 END) as serviceCount,
+            COUNT(CASE WHEN type = 1 THEN 1 END) as productCount,
+            COUNT(CASE WHEN type = 2 THEN 1 END) as experienceCount,
+            COUNT(CASE WHEN type = 3 THEN 1 END) as projectCount
+        FROM culture_project
+    </select>
+
+</mapper>
+
+
+
+
+
+

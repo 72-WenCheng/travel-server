@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.PlanAuditLogMapper">
+
+    <!-- 根据攻略ID获取审核记录 -->
+    <select id="selectAuditLogsByPlanId" resultType="com.zhly.entity.PlanAuditLog">
+        SELECT 
+            pal.*,
+            u.nickname as auditorName,
+            tp.title as planTitle
+        FROM plan_audit_log pal
+        LEFT JOIN sys_user u ON pal.auditor_id = u.id
+        LEFT JOIN travel_plan tp ON pal.plan_id = tp.id
+        WHERE pal.plan_id = #{planId}
+        ORDER BY pal.audit_time DESC
+    </select>
+
+    <!-- 根据审核人ID获取审核记录 -->
+    <select id="selectAuditLogsByAuditorId" resultType="com.zhly.entity.PlanAuditLog">
+        SELECT 
+            pal.*,
+            u.nickname as auditorName,
+            tp.title as planTitle
+        FROM plan_audit_log pal
+        LEFT JOIN sys_user u ON pal.auditor_id = u.id
+        LEFT JOIN travel_plan tp ON pal.plan_id = tp.id
+        WHERE pal.auditor_id = #{auditorId}
+        ORDER BY pal.audit_time DESC
+    </select>
+
+</mapper>
+
+

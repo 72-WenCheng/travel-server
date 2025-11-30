@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.UserLoginHistoryMapper">
+
+    <!-- 获取用户登录历史（分页） -->
+    <select id="selectUserLoginHistory" resultType="java.util.Map">
+        SELECT 
+            id,
+            user_id as userId,
+            login_time as loginTime,
+            login_ip as loginIp,
+            login_device as loginDevice,
+            login_location as loginLocation,
+            user_agent as userAgent,
+            status,
+            fail_reason as failReason,
+            create_time as createTime
+        FROM user_login_history
+        WHERE user_id = #{userId}
+        ORDER BY login_time DESC
+        LIMIT ${(page - 1) * size}, #{size}
+    </select>
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

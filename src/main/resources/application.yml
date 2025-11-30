@@ -1,0 +1,160 @@
+server:
+  port: 8070
+
+system:
+  info:
+    version: ${SYSTEM_VERSION:1.1.0}
+
+spring:
+  application:
+    name: travel-server
+  
+  # 多环境配置：dev=开发环境, test=测试环境, prod=生产环境
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  
+  # 禁用RabbitMQ自动配置（开发环境）
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+  
+  # 文件上传配置
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+      file-size-threshold: 2KB
+  
+  # 数据源配置 - 使用MySQL数据库
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/travel_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+    
+    # Druid连接池配置
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      filters: stat,wall,log4j2
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+      web-stat-filter:
+        enabled: true
+        url-pattern: /*
+        exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*"
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*
+        reset-enable: false
+        login-username: admin
+        login-password: admin123
+        allow: 127.0.0.1
+  
+  # Redis配置
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 10000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+  
+  # 邮件配置
+  mail:
+    host: ${MAIL_HOST:smtp.qq.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:2401554207@qq.com}  # 系统邮箱账号（用于SMTP认证）
+    password: ${MAIL_PASSWORD:moifugqshlazdhge}    # 邮箱授权码
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            enable: false
+
+# MyBatis Plus配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    call-setters-on-nulls: true
+    jdbc-type-for-null: 'null'
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: ASSIGN_ID
+      # 禁用逻辑删除，使用物理删除
+      # logic-delete-field: deleted
+      # logic-delete-value: 1
+      # logic-not-delete-value: 0
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+  type-aliases-package: com.zhly.entity
+
+# 日志配置
+logging:
+  level:
+    com.zhly: debug
+    org.springframework: info
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n'
+
+# JWT配置
+travel:
+  jwt:
+    secret: zhly-travel-system-secret-key-2024-for-jwt-hmac-sha256-minimum-32-chars-long
+    expiration: 86400000  # 24小时
+  
+  # 前端域名配置（用于生成重置密码链接等）
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:3000}  # 开发环境默认localhost:3000，生产环境改为实际域名
+  
+  # 文件上传配置
+  upload:
+    path: ${UPLOAD_PATH:./upload/}  # 文件上传路径，默认为项目根目录下的upload文件夹
+    max-size: 10485760  # 最大文件大小（10MB）
+
+# AI配置
+ai:
+  api:
+    url: https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions
+    key: ${AI_API_KEY:bce-v3/ALTAK-ebTZhKPh9u7kfaR3l0KeJ/a667c2ba91851b8078065c464f27202202a7e3f6}
+  model:
+    name: 文心一言
+  max:
+    tokens: 1000
+  temperature: 0.7
+  timeout: 30000
+
+# 第三方API配置
+third-party:
+  weather:
+    api:
+      url: https://api.openweathermap.org/data/2.5/weather
+      key: ${WEATHER_API_KEY:your-weather-api-key}
+  amap:
+    api:
+      url: https://restapi.amap.com
+      key: ${AMAP_API_KEY:d0560f526134a2fd936096f3aab5b888}
+  12306:
+    api:
+      url: https://kyfw.12306.cn
+  timeout: 20000  # 增加到20秒，给天气API更多响应时间
+

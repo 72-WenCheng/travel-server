@@ -1,0 +1,103 @@
+# ============================================
+# 开发环境配置 (application-dev.yml)
+# ============================================
+# 启动方式：
+# 1. IDE启动参数：-Dspring.profiles.active=dev
+# 2. 环境变量：export SPRING_PROFILES_ACTIVE=dev
+# 3. 默认配置：不设置环境变量时默认使用dev
+# ============================================
+
+spring:
+  # 数据源配置 - 本地开发数据库
+  datasource:
+    url: jdbc:mysql://localhost:3306/travel_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    
+    # Druid监控
+    druid:
+      web-stat-filter:
+        enabled: true
+      stat-view-servlet:
+        enabled: true
+        allow: 127.0.0.1
+  
+  # Redis配置 - 本地开发
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 
+  
+  # 邮件配置 - 使用真实SMTP发送
+  mail:
+    host: smtp.qq.com
+    port: 587
+    username: 2401554207@qq.com  # 系统邮箱账号（用于SMTP认证）
+    password: moifugqshlazdhge    # 邮箱授权码
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            enable: false
+
+# 日志配置 - 开发环境详细日志
+logging:
+  level:
+    com.zhly: debug
+    org.springframework: info
+    org.mybatis: debug
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n'
+
+# 业务配置
+travel:
+  # 前端域名 - 开发环境使用localhost（注意：前端实际运行在3000端口）
+  frontend:
+    url: http://localhost:3000
+  
+  # JWT配置
+  jwt:
+    secret: dev-secret-key-for-jwt-hmac-sha256-algorithm-minimum-32-chars
+    expiration: 86400000  # 24小时
+
+# AI配置 - 使用测试Key或禁用
+ai:
+  api:
+    url: https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions
+    key: bce-v3/ALTAK-ebTZhKPh9u7kfaR3l0KeJ/a667c2ba91851b8078065c464f27202202a7e3f6  # 开发环境可以使用测试key或留空禁用
+  model:
+    name: 文心一言
+  max:
+    tokens: 1000
+  temperature: 0.7
+  timeout: 30000
+
+# 第三方API配置 - 使用测试Key或禁用
+third-party:
+  weather:
+    api:
+      url: https://api.openweathermap.org/data/2.5/weather
+      key: your-dev-weather-api-key  # 开发环境可以使用测试key或留空禁用
+  amap:
+    api:
+      url: https://restapi.amap.com
+      key: d0560f526134a2fd936096f3aab5b888  # 高德地图Web服务API Key（用于天气查询）
+  12306:
+    api:
+      url: https://kyfw.12306.cn
+  timeout: 10000
+
+# ============================================
+# 开发环境特性说明：
+# ============================================
+# 1. 使用本地数据库和Redis
+# 2. 邮件使用模拟发送（验证码在控制台打印）
+# 3. 启用详细日志输出
+# 4. 使用localhost作为前端域名
+# 5. 可以配置测试用的API Key
+# ============================================
+

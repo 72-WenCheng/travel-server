@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.TravelPlanMapper">
+
+    <!-- 获取攻略列表 -->
+    <select id="selectPlanList" resultType="com.zhly.entity.TravelPlan">
+        SELECT 
+            tp.*,
+            u.nickname as author,
+            u.avatar as authorAvatar,
+            up.total_points as authorPoints
+        FROM travel_plan tp
+        LEFT JOIN sys_user u ON tp.author_id = u.id
+        LEFT JOIN user_points up ON u.id = up.user_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (tp.title LIKE CONCAT('%', #{keyword}, '%') 
+                     OR tp.description LIKE CONCAT('%', #{keyword}, '%')
+                     OR tp.destination LIKE CONCAT('%', #{keyword}, '%')
+                     OR tp.tags LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="destination != null and destination != ''">
+                AND tp.destination LIKE CONCAT('%', #{destination}, '%')
+            </if>
+            <if test="status != null">
+                AND tp.status = #{status}
+            </if>
+        </where>
+        ORDER BY tp.create_time DESC
+        LIMIT ${(page - 1) * size}, #{size}
+    </select>
+
+    <!-- 获取攻略总数 -->
+    <select id="selectPlanCount" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM travel_plan 
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (title LIKE CONCAT('%', #{keyword}, '%') 
+                     OR description LIKE CONCAT('%', #{keyword}, '%')
+                     OR destination LIKE CONCAT('%', #{keyword}, '%')
+                     OR tags LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="destination != null and destination != ''">
+                AND destination LIKE CONCAT('%', #{destination}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!-- 获取最新攻略 -->
+    <select id="selectLatestPlans" resultType="com.zhly.entity.TravelPlan">
+        SELECT tp.*, u.nickname as author, u.avatar as authorAvatar
+        FROM travel_plan tp
+        LEFT JOIN sys_user u ON tp.author_id = u.id
+        ORDER BY tp.create_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 获取热门攻略 -->
+    <select id="selectHotPlans" resultType="com.zhly.entity.TravelPlan">
+        SELECT * FROM travel_plan 
+        WHERE status = 1
+        ORDER BY view_count DESC, like_count DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 获取用户攻略列表 -->
+    <select id="selectUserPlans" resultType="com.zhly.entity.TravelPlan">
+        SELECT * FROM travel_plan 
+        WHERE author_id = #{userId}
+        ORDER BY create_time DESC
+        LIMIT ${(page - 1) * size}, #{size}
+    </select>
+
+    <!-- 获取攻略详情（关联用户表获取作者信息） -->
+    <select id="selectPlanByIdWithAuthor" resultType="com.zhly.entity.TravelPlan">
+        SELECT 
+            tp.*,
+            u.nickname as author,
+            u.username as username,
+            u.avatar as authorAvatar,
+            up.total_points as authorPoints
+        FROM travel_plan tp
+        LEFT JOIN sys_user u ON tp.author_id = u.id
+        LEFT JOIN user_points up ON u.id = up.user_id
+        WHERE tp.id = #{id}
+    </select>
+
+    <!-- 更新攻略统计 -->
+    <update id="updatePlanStats">
+        UPDATE travel_plan 
+        SET 
+        <choose>
+            <when test="type == 'view'">view_count = view_count + 1</when>
+            <when test="type == 'like'">like_count = like_count + 1</when>
+            <when test="type == 'collect'">like_count = like_count + 1</when>
+            <when test="type == 'comment'">comment_count = comment_count + 1</when>
+        </choose>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 审核攻略 -->
+    <update id="auditPlan">
+        UPDATE travel_plan 
+        SET status = #{status}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 获取攻略统计 -->
+    <select id="selectPlanStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as total,
+            COUNT(CASE WHEN status = 1 THEN 1 END) as published,
+            COUNT(CASE WHEN status = 0 THEN 1 END) as draft,
+            COUNT(CASE WHEN status = 2 THEN 1 END) as unpublished,
+            COUNT(CASE WHEN status = 3 THEN 1 END) as pending,
+            COUNT(CASE WHEN status = 4 THEN 1 END) as rejected,
+            SUM(view_count) as totalViews,
+            AVG(rating) as avgRating
+        FROM travel_plan
+    </select>
+
+    <!-- ======================================== -->
+    <!-- 新增：支持所有筛选条件的查询方法 -->
+    <!-- ======================================== -->
+
+    <!-- 获取攻略列表（支持所有筛选条件） -->
+    <select id="selectPlanListWithFilters" resultType="com.zhly.entity.TravelPlan">
+        SELECT 
+            tp.*,
+            u.nickname as author,
+            u.username as username,
+            u.avatar as authorAvatar,
+            up.total_points as authorPoints
+        FROM travel_plan tp
+        LEFT JOIN sys_user u ON tp.author_id = u.id
+        LEFT JOIN user_points up ON u.id = up.user_id
+        <where>
+            <!-- 排除草稿状态（audit_status IS NULL）：草稿对管理员不可见，只有用户自己能看到 -->
+            <!-- 如果指定了 authorId，说明是用户端查询自己的攻略，可以看到草稿 -->
+            <choose>
+                <when test="authorId != null">
+                    <!-- 用户端查询：可以看到自己的草稿 -->
+                </when>
+                <otherwise>
+                    <!-- 管理端查询：不显示草稿 -->
+                    AND tp.audit_status IS NOT NULL
+                </otherwise>
+            </choose>
+            
+            <!-- 标题关键词筛选（包括标题、描述、目的地、标签） -->
+            <if test="keyword != null and keyword != ''">
+                AND (tp.title LIKE CONCAT('%', #{keyword}, '%')
+                     OR tp.description LIKE CONCAT('%', #{keyword}, '%')
+                     OR tp.destination LIKE CONCAT('%', #{keyword}, '%')
+                     OR tp.tags LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <!-- 目的地筛选 -->
+            <if test="destination != null and destination != ''">
+                AND tp.destination LIKE CONCAT('%', #{destination}, '%')
+            </if>
+            <!-- 发布状态筛选 -->
+            <if test="status != null">
+                AND tp.status = #{status}
+            </if>
+            <!-- 审核状态筛选 -->
+            <if test="auditStatus != null">
+                AND tp.audit_status = #{auditStatus}
+            </if>
+            <!-- 作者ID筛选 -->
+            <if test="authorId != null">
+                AND tp.author_id = #{authorId}
+            </if>
+            <!-- 作者昵称筛选 -->
+            <if test="authorName != null and authorName != ''">
+                AND u.nickname LIKE CONCAT('%', #{authorName}, '%')
+            </if>
+            <!-- 创建时间范围筛选 - 开始时间 -->
+            <if test="startTime != null">
+                AND tp.create_time &gt;= #{startTime}
+            </if>
+            <!-- 创建时间范围筛选 - 结束时间 -->
+            <if test="endTime != null">
+                AND tp.create_time &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY tp.create_time DESC
+        LIMIT ${(page - 1) * size}, #{size}
+    </select>
+
+    <!-- 获取攻略总数（支持所有筛选条件） -->
+    <select id="selectPlanCountWithFilters" resultType="java.lang.Long">
+        SELECT COUNT(DISTINCT tp.id)
+        FROM travel_plan tp
+        LEFT JOIN sys_user u ON tp.author_id = u.id
+        <where>
+            <!-- 排除草稿状态（audit_status IS NULL）：草稿对管理员不可见 -->
+            <choose>
+                <when test="authorId != null">
+                    <!-- 用户端查询：可以看到自己的草稿 -->
+                </when>
+                <otherwise>
+                    <!-- 管理端查询：不显示草稿 -->
+                    AND tp.audit_status IS NOT NULL
+                </otherwise>
+            </choose>
+            
+            <!-- 标题关键词筛选（包括标题、描述、目的地、标签） -->
+            <if test="keyword != null and keyword != ''">
+                AND (tp.title LIKE CONCAT('%', #{keyword}, '%')
+                     OR tp.description LIKE CONCAT('%', #{keyword}, '%')
+                     OR tp.destination LIKE CONCAT('%', #{keyword}, '%')
+                     OR tp.tags LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <!-- 目的地筛选 -->
+            <if test="destination != null and destination != ''">
+                AND tp.destination LIKE CONCAT('%', #{destination}, '%')
+            </if>
+            <!-- 发布状态筛选 -->
+            <if test="status != null">
+                AND tp.status = #{status}
+            </if>
+            <!-- 审核状态筛选 -->
+            <if test="auditStatus != null">
+                AND tp.audit_status = #{auditStatus}
+            </if>
+            <!-- 作者ID筛选 -->
+            <if test="authorId != null">
+                AND tp.author_id = #{authorId}
+            </if>
+            <!-- 作者昵称筛选 -->
+            <if test="authorName != null and authorName != ''">
+                AND u.nickname LIKE CONCAT('%', #{authorName}, '%')
+            </if>
+            <!-- 创建时间范围筛选 - 开始时间 -->
+            <if test="startTime != null">
+                AND tp.create_time &gt;= #{startTime}
+            </if>
+            <!-- 创建时间范围筛选 - 结束时间 -->
+            <if test="endTime != null">
+                AND tp.create_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
+</mapper>
+
+
+
+
+
+

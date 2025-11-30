@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.UserInviteMapper">
+    
+    <!-- 根据邀请码查询邀请记录（查询邀请码记录，invitee_id为null） -->
+    <select id="selectByInviteCode" resultType="com.zhly.entity.UserInvite">
+        SELECT * FROM user_invite
+        WHERE invite_code = #{inviteCode}
+        AND invitee_id IS NULL
+        ORDER BY id DESC
+        LIMIT 1
+    </select>
+    
+    <!-- 根据邀请人ID查询邀请列表（只查询实际邀请关系，invitee_id不为null） -->
+    <select id="selectByInviterId" resultType="com.zhly.entity.UserInvite">
+        SELECT * FROM user_invite
+        WHERE inviter_id = #{inviterId}
+        AND invitee_id IS NOT NULL
+        ORDER BY create_time DESC
+    </select>
+    
+    <!-- 统计邀请人数（只统计实际邀请关系，invitee_id不为null） -->
+    <select id="countByInviterId" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM user_invite
+        WHERE inviter_id = #{inviterId}
+        AND invitee_id IS NOT NULL
+    </select>
+    
+</mapper>
+

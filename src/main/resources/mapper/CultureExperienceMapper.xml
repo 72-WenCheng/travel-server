@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.CultureExperienceMapper">
+
+    <!-- 获取文化体验列表 -->
+    <select id="selectExperienceList" resultType="com.zhly.entity.CultureExperience">
+        SELECT * FROM culture_experience 
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') 
+                     OR description LIKE CONCAT('%', #{keyword}, '%')
+                     OR location LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="categoryName != null and categoryName != ''">
+                AND category_name = #{categoryName}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        LIMIT ${(page - 1) * size}, #{size}
+    </select>
+
+    <!-- 获取文化体验总数 -->
+    <select id="selectExperienceCount" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM culture_experience 
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') 
+                     OR description LIKE CONCAT('%', #{keyword}, '%')
+                     OR location LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="categoryName != null and categoryName != ''">
+                AND category_name = #{categoryName}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!-- 获取热门文化体验 -->
+    <select id="selectHotExperiences" resultType="com.zhly.entity.CultureExperience">
+        SELECT * FROM culture_experience 
+        WHERE status = 'active'
+        ORDER BY view_count DESC, order_count DESC, rating DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 根据分类获取文化体验列表 -->
+    <select id="selectExperiencesByCategory" resultType="com.zhly.entity.CultureExperience">
+        SELECT * FROM culture_experience 
+        WHERE category_name = #{categoryName} AND status = 'active'
+        ORDER BY view_count DESC, rating DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 更新浏览量 -->
+    <update id="updateViewCount">
+        UPDATE culture_experience 
+        SET view_count = view_count + 1
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新预订量 -->
+    <update id="updateOrderCount">
+        UPDATE culture_experience 
+        SET order_count = order_count + 1
+        WHERE id = #{id}
+    </update>
+
+    <!-- 获取文化体验统计信息 -->
+    <select id="selectExperienceStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalExperiences,
+            COUNT(CASE WHEN status = 'active' THEN 1 END) as activeExperiences,
+            COUNT(CASE WHEN status = 'inactive' THEN 1 END) as inactiveExperiences,
+            COALESCE(SUM(order_count), 0) as totalOrders,
+            COALESCE(SUM(view_count), 0) as totalViews,
+            COALESCE(AVG(rating), 0) as avgRating,
+            COUNT(DISTINCT category_name) as categoryCount
+        FROM culture_experience
+    </select>
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

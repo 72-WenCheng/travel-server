@@ -1,0 +1,124 @@
+# ============================================
+# 生产环境配置 (application-prod.yml)
+# ============================================
+# 启动方式：
+# 1. IDE启动参数：-Dspring.profiles.active=prod
+# 2. 环境变量：export SPRING_PROFILES_ACTIVE=prod
+# 3. Jar启动：java -jar app.jar --spring.profiles.active=prod
+# ============================================
+# ⚠️ 重要：所有配置必须使用环境变量，不要硬编码敏感信息！
+# ============================================
+
+spring:
+  # 数据源配置 - 生产数据库
+  datasource:
+    url: jdbc:mysql://${DB_HOST:prod-db-host}:${DB_PORT:3306}/${DB_NAME:travel_db}?useUnicode=true&characterEncoding=utf8&useSSL=true&serverTimezone=Asia/Shanghai
+    username: ${DB_USERNAME}  # ⚠️ 必须通过环境变量配置
+    password: ${DB_PASSWORD}  # ⚠️ 必须通过环境变量配置
+    
+    # Druid监控 - 生产环境禁用或限制访问
+    druid:
+      web-stat-filter:
+        enabled: false
+      stat-view-servlet:
+        enabled: false
+  
+  # Redis配置 - 生产服务器
+  data:
+    redis:
+      host: ${REDIS_HOST}  # ⚠️ 必须通过环境变量配置
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}  # ⚠️ 必须通过环境变量配置
+  
+  # 邮件配置 - 生产邮箱（企业邮箱推荐）
+  mail:
+    host: ${MAIL_HOST:smtp.exmail.qq.com}  # 推荐使用企业邮箱
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}  # ⚠️ 必须通过环境变量配置
+    password: ${MAIL_PASSWORD}  # ⚠️ 必须通过环境变量配置
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            enable: false
+
+# 日志配置 - 生产环境仅记录重要日志
+logging:
+  level:
+    com.zhly: info
+    org.springframework: warn
+    org.mybatis: warn
+  # 生产环境不输出到控制台，只输出到文件
+  pattern:
+    console: ''  # 禁用控制台输出
+  file:
+    name: logs/travel-server.log
+    max-size: 10MB
+    max-history: 30
+  # 指定日志输出位置
+  root:
+    level: info
+    appender-ref:
+      - file
+
+# 业务配置
+travel:
+  # 前端域名 - 生产环境域名
+  frontend:
+    url: ${FRONTEND_URL}  # ⚠️ 必须通过环境变量配置（如：https://your-domain.com）
+  
+  # JWT配置
+  jwt:
+    secret: ${JWT_SECRET}  # ⚠️ 必须通过环境变量配置（使用强随机密钥）
+    expiration: 86400000  # 24小时
+
+# AI配置 - 生产环境使用真实Key
+ai:
+  api:
+    url: https://api.openai.com/v1/chat/completions
+    key: ${AI_API_KEY}  # ⚠️ 必须通过环境变量配置
+  model:
+    name: gpt-3.5-turbo
+  max:
+    tokens: 1000
+  temperature: 0.7
+  timeout: 30000
+
+# 第三方API配置 - 生产环境使用真实Key
+third-party:
+  weather:
+    api:
+      url: https://api.openweathermap.org/data/2.5/weather
+      key: ${WEATHER_API_KEY}  # ⚠️ 必须通过环境变量配置
+  amap:
+    api:
+      url: https://restapi.amap.com
+      key: ${AMAP_API_KEY}  # ⚠️ 必须通过环境变量配置
+  12306:
+    api:
+      url: https://kyfw.12306.cn
+  timeout: 10000
+
+# ============================================
+# 生产环境特性说明：
+# ============================================
+# 1. 所有敏感信息必须通过环境变量配置
+# 2. 使用生产环境的数据库和Redis
+# 3. 使用企业邮箱发送邮件
+# 4. 日志记录到文件，并设置轮转
+# 5. 使用生产环境域名（HTTPS）
+# 6. 使用生产环境的API Key
+# 7. 禁用或限制Druid监控访问
+# 
+# ⚠️ 必须配置的环境变量：
+# - DB_USERNAME, DB_PASSWORD
+# - REDIS_HOST, REDIS_PASSWORD
+# - MAIL_USERNAME, MAIL_PASSWORD
+# - FRONTEND_URL
+# - JWT_SECRET
+# - AI_API_KEY, WEATHER_API_KEY, AMAP_API_KEY
+# ============================================
+

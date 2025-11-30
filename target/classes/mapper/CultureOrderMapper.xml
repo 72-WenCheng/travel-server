@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.CultureOrderMapper">
+    
+    <resultMap id="BaseResultMap" type="com.zhly.entity.CultureOrder">
+        <id column="id" property="id" />
+        <result column="order_no" property="orderNo" />
+        <result column="user_id" property="userId" />
+        <result column="product_type" property="productType" />
+        <result column="product_id" property="productId" />
+        <result column="product_name" property="productName" />
+        <result column="product_image" property="productImage" />
+        <result column="product_price" property="productPrice" />
+        <result column="quantity" property="quantity" />
+        <result column="total_amount" property="totalAmount" />
+        <result column="coupon_id" property="couponId" />
+        <result column="coupon_discount" property="couponDiscount" />
+        <result column="final_amount" property="finalAmount" />
+        <result column="contact_name" property="contactName" />
+        <result column="contact_phone" property="contactPhone" />
+        <result column="address_id" property="addressId" />
+        <result column="province" property="province" />
+        <result column="city" property="city" />
+        <result column="district" property="district" />
+        <result column="detailed_address" property="detailedAddress" />
+        <result column="invoice_type" property="invoiceType" />
+        <result column="invoice_title" property="invoiceTitle" />
+        <result column="invoice_tax_no" property="invoiceTaxNo" />
+        <result column="invoice_email" property="invoiceEmail" />
+        <result column="buyer_message" property="buyerMessage" />
+        <result column="order_status" property="orderStatus" />
+        <result column="payment_method" property="paymentMethod" />
+        <result column="payment_time" property="paymentTime" />
+        <result column="payment_no" property="paymentNo" />
+        <result column="ship_time" property="shipTime" />
+        <result column="ship_no" property="shipNo" />
+        <result column="ship_company" property="shipCompany" />
+        <result column="finish_time" property="finishTime" />
+        <result column="cancel_time" property="cancelTime" />
+        <result column="cancel_reason" property="cancelReason" />
+        <result column="refund_time" property="refundTime" />
+        <result column="refund_amount" property="refundAmount" />
+        <result column="refund_reason" property="refundReason" />
+        <result column="remark" property="remark" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+    
+    <select id="selectOrderPage" resultMap="BaseResultMap">
+        SELECT * FROM culture_order
+        <where>
+            <if test="orderNo != null and orderNo != ''">
+                AND order_no LIKE CONCAT('%', #{orderNo}, '%')
+            </if>
+            <if test="productType != null">
+                AND product_type = #{productType}
+            </if>
+            <if test="orderStatus != null">
+                AND order_status = #{orderStatus}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+    
+    <select id="selectOrderListForExport" resultMap="BaseResultMap">
+        SELECT * FROM culture_order
+        <where>
+            <if test="orderNo != null and orderNo != ''">
+                AND order_no LIKE CONCAT('%', #{orderNo}, '%')
+            </if>
+            <if test="productType != null">
+                AND product_type = #{productType}
+            </if>
+            <if test="orderStatus != null">
+                AND order_status = #{orderStatus}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+    
+</mapper>
+

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhly.mapper.AiGenerateLogMapper">
+
+    <!-- 获取AI日志列表 -->
+    <select id="selectLogList" resultType="com.zhly.entity.AiGenerateLog">
+        SELECT 
+            id, 
+            user_id as userId, 
+            request_content as requestContent, 
+            response_content as responseContent, 
+            generate_type as generateType, 
+            cost_tokens as costTokens, 
+            response_time as responseTime, 
+            status, 
+            create_time as createTime
+        FROM ai_generate_log 
+        <where>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 获取AI日志总数 -->
+    <select id="selectLogCount" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM ai_generate_log 
+        <where>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!-- 获取AI统计 -->
+    <select id="selectAiStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalRequests,
+            COUNT(CASE WHEN status = 1 THEN 1 END) as successRequests,
+            COUNT(CASE WHEN status = 0 THEN 1 END) as failedRequests,
+            COALESCE(ROUND(COUNT(CASE WHEN status = 1 THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 2), 0) as successRate,
+            COALESCE(SUM(cost_tokens), 0) as totalTokensUsed,
+            COALESCE(ROUND(AVG(response_time), 0), 0) as avgResponseTime,
+            COUNT(DISTINCT user_id) as activeUsers
+        FROM ai_generate_log
+    </select>
+
+    <!-- 获取用户AI统计 -->
+    <select id="selectUserAiStats" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalRequests,
+            COUNT(CASE WHEN status = 1 THEN 1 END) as successRequests,
+            COUNT(CASE WHEN status = 0 THEN 1 END) as failedRequests,
+            ROUND(COUNT(CASE WHEN status = 1 THEN 1 END) * 100.0 / COUNT(*), 2) as successRate,
+            SUM(cost_tokens) as totalTokensUsed
+        FROM ai_generate_log
+        WHERE user_id = #{userId}
+    </select>
+
+</mapper>
+
+
+
+
+
+
