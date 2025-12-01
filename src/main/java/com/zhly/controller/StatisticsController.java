@@ -260,6 +260,19 @@ public class StatisticsController {
             return Result.error("获取文旅业务统计失败: " + e.getMessage());
         }
     }
+    
+    /**
+     * 获取全球访问统计（供管理后台世界地图使用）
+     */
+    @GetMapping("/world-traffic")
+    public Result<java.util.List<java.util.Map<String, Object>>> getWorldTrafficStatistics() {
+        try {
+            java.util.List<java.util.Map<String, Object>> result = statisticsService.getWorldTrafficStatistics();
+            return Result.success("获取全球访问统计成功", result);
+        } catch (Exception e) {
+            return Result.error("获取全球访问统计失败: " + e.getMessage());
+        }
+    }
 
     /**
      * 获取待处理事项统计

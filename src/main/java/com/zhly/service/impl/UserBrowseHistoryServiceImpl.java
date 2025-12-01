@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zhly.entity.UserBrowseHistory;
 import com.zhly.mapper.UserBrowseHistoryMapper;
+import com.zhly.service.GeoIpService;
 import com.zhly.service.UserBrowseHistoryService;
+import com.zhly.service.dto.GeoIpInfo;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,13 +18,19 @@ import java.util.List;
 @Service
 public class UserBrowseHistoryServiceImpl extends ServiceImpl<UserBrowseHistoryMapper, UserBrowseHistory> implements UserBrowseHistoryService {
     
-    @Override
-    public boolean addBrowseHistory(Long userId, Integer browseType, Long browseId, String browseTitle, String browseImage) {
-        return addBrowseHistory(userId, browseType, browseId, browseTitle, browseImage, 0);
+    private final GeoIpService geoIpService;
+    
+    public UserBrowseHistoryServiceImpl(GeoIpService geoIpService) {
+        this.geoIpService = geoIpService;
     }
     
     @Override
-    public boolean addBrowseHistory(Long userId, Integer browseType, Long browseId, String browseTitle, String browseImage, Integer duration) {
+    public boolean addBrowseHistory(Long userId, Integer browseType, Long browseId, String browseTitle, String browseImage) {
+        return addBrowseHistory(userId, browseType, browseId, browseTitle, browseImage, 0, null);
+    }
+    
+    @Override
+    public boolean addBrowseHistory(Long userId, Integer browseType, Long browseId, String browseTitle, String browseImage, Integer duration, String ipAddress) {
         UserBrowseHistory history = new UserBrowseHistory();
         history.setUserId(userId);
         history.setBrowseType(browseType);
@@ -30,6 +38,13 @@ public class UserBrowseHistoryServiceImpl extends ServiceImpl<UserBrowseHistoryM
         history.setBrowseTitle(browseTitle);
         history.setBrowseImage(browseImage);
         history.setDuration(duration != null ? duration : 0);
+        history.setIpAddress(ipAddress);
+        
+        GeoIpInfo geoIpInfo = geoIpService.lookup(ipAddress);
+        if (geoIpInfo != null) {
+            history.setCountryCode(geoIpInfo.getCountryCode());
+            history.setCountryName(geoIpInfo.getCountryName());
+        }
         history.setCreateTime(LocalDateTime.now());
         return this.save(history);
     }

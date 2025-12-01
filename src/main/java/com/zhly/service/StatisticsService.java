@@ -62,6 +62,11 @@ public interface StatisticsService {
     Map<String, Object> getRegionDistributionStatistics();
     
     /**
+     * 获取全球访问统计（按国家/地区聚合）
+     */
+    java.util.List<java.util.Map<String, Object>> getWorldTrafficStatistics();
+    
+    /**
      * 获取时间趋势统计
      */
     Map<String, Object> getTimeTrendStatistics(String type, Integer days);

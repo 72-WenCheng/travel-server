@@ -3,12 +3,14 @@ package com.zhly.user.controller;
 import com.zhly.common.Result;
 import com.zhly.entity.UserBrowseHistory;
 import com.zhly.service.UserBrowseHistoryService;
+import com.zhly.util.IpAddressUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * 用户端-浏览历史控制器
@@ -29,8 +31,10 @@ public class UserBrowseHistoryController {
             @RequestParam Long browseId,
             @RequestParam(required = false) String browseTitle,
             @RequestParam(required = false) String browseImage,
-            @RequestParam(required = false, defaultValue = "0") Integer duration) {
-        boolean success = historyService.addBrowseHistory(userId, browseType, browseId, browseTitle, browseImage, duration);
+            @RequestParam(required = false, defaultValue = "0") Integer duration,
+            HttpServletRequest request) {
+        String clientIp = IpAddressUtils.resolveClientIp(request);
+        boolean success = historyService.addBrowseHistory(userId, browseType, browseId, browseTitle, browseImage, duration, clientIp);
         return success ? Result.success("添加成功") : Result.error("添加失败");
     }
     

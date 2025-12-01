@@ -33,6 +33,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -448,6 +449,72 @@ public class StatisticsServiceImpl implements StatisticsService {
             return result;
         } catch (Exception e) {
             throw new RuntimeException("获取地区分布统计失败: " + e.getMessage());
+        }
+    }
+    
+    @Override
+    public List<Map<String, Object>> getWorldTrafficStatistics() {
+        try {
+            List<Map<String, Object>> aggregates = browseHistoryMapper.selectWorldTrafficAggregates();
+            if (aggregates == null || aggregates.isEmpty()) {
+                return java.util.Collections.emptyList();
+            }
+
+            List<Map<String, Object>> list = new java.util.ArrayList<>();
+            for (Map<String, Object> row : aggregates) {
+                int visits = ((Number) row.getOrDefault("visits", 0)).intValue();
+                int queries = ((Number) row.getOrDefault("queries", 0)).intValue();
+                Number avgDurationValue = (Number) row.get("avgDuration");
+                int avgDurationSeconds = avgDurationValue != null ? avgDurationValue.intValue() : 0;
+
+                String countryCode = (String) row.get("countryCode");
+                String cnName = (String) row.getOrDefault("countryName", "未知");
+                String enName = resolveEnglishCountryName(countryCode);
+
+                list.add(createWorldTrafficItem(
+                        countryCode != null ? countryCode : "UNKNOWN",
+                        enName,
+                        cnName,
+                        visits,
+                        queries,
+                        avgDurationSeconds
+                ));
+            }
+
+            list.sort((a, b) -> {
+                int v1 = ((Number) b.getOrDefault("visits", 0)).intValue();
+                int v2 = ((Number) a.getOrDefault("visits", 0)).intValue();
+                return Integer.compare(v1, v2);
+            });
+
+            return list;
+        } catch (Exception e) {
+            throw new RuntimeException("获取全球访问统计失败: " + e.getMessage());
+        }
+    }
+    
+    private Map<String, Object> createWorldTrafficItem(String code, String name, String cnName,
+                                                       int visits, int queries, int avgDurationSeconds) {
+        Map<String, Object> item = new HashMap<>();
+        item.put("code", code);
+        item.put("name", name);
+        item.put("cnName", cnName);
+        item.put("visits", visits);
+        item.put("queries", queries);
+        item.put("avgDuration", avgDurationSeconds);
+        return item;
+    }
+
+    private String resolveEnglishCountryName(String countryCode) {
+        if (countryCode == null || countryCode.isBlank()) {
+            return "Unknown";
+        }
+        try {
+            Locale locale = new Locale("", countryCode);
+            String name = locale.getDisplayCountry(Locale.ENGLISH);
+            return (name == null || name.isBlank()) ? countryCode : name;
+        } catch (Exception e) {
+            return countryCode;
         }
     }
 

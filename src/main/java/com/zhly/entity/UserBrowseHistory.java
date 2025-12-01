@@ -50,6 +50,21 @@ public class UserBrowseHistory {
     private Integer duration;
 
     /**
+     * 访问者IP
+     */
+    private String ipAddress;
+
+    /**
+     * 国家/地区代码（ISO-2，例如 CN、US）
+     */
+    private String countryCode;
+
+    /**
+     * 国家/地区名称（中文）
+     */
+    private String countryName;
+
+    /**
      * 浏览时间
      */
     private LocalDateTime createTime;

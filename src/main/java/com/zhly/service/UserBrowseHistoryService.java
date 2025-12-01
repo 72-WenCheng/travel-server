@@ -13,12 +13,21 @@ public interface UserBrowseHistoryService extends IService<UserBrowseHistory> {
     /**
      * 添加浏览记录
      */
-    boolean addBrowseHistory(Long userId, Integer browseType, Long browseId, String browseTitle, String browseImage);
+    default boolean addBrowseHistory(Long userId, Integer browseType, Long browseId, String browseTitle, String browseImage) {
+        return addBrowseHistory(userId, browseType, browseId, browseTitle, browseImage, 0, null);
+    }
     
     /**
      * 添加浏览记录（支持传入浏览时长）
      */
-    boolean addBrowseHistory(Long userId, Integer browseType, Long browseId, String browseTitle, String browseImage, Integer duration);
+    default boolean addBrowseHistory(Long userId, Integer browseType, Long browseId, String browseTitle, String browseImage, Integer duration) {
+        return addBrowseHistory(userId, browseType, browseId, browseTitle, browseImage, duration, null);
+    }
+
+    /**
+     * 添加浏览记录（包含IP信息，用于地理统计）
+     */
+    boolean addBrowseHistory(Long userId, Integer browseType, Long browseId, String browseTitle, String browseImage, Integer duration, String ipAddress);
     
     /**
      * 更新浏览记录的停留时长
