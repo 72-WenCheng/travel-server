@@ -944,8 +944,12 @@ public class StatisticsServiceImpl implements StatisticsService {
             planViewSumWrapper.select("SUM(view_count) as totalViews");
             planViewSumWrapper.eq("status", 1).eq("audit_status", 1);
             List<Map<String, Object>> planViewSum = travelPlanMapper.selectMaps(planViewSumWrapper);
-            if (planViewSum != null && !planViewSum.isEmpty() && planViewSum.get(0).get("totalViews") != null) {
-                planViews = ((Number) planViewSum.get(0).get("totalViews")).longValue();
+            if (planViewSum != null && !planViewSum.isEmpty()) {
+                Map<String, Object> firstRow = planViewSum.get(0);
+                Object totalViewsObj = firstRow != null ? firstRow.get("totalViews") : null;
+                if (totalViewsObj != null) {
+                    planViews = ((Number) totalViewsObj).longValue();
+                }
             }
 
             Long attractionViews = 0L;
@@ -953,8 +957,12 @@ public class StatisticsServiceImpl implements StatisticsService {
             attractionViewSumWrapper.select("SUM(view_count) as totalViews");
             attractionViewSumWrapper.eq("status", 1).eq("deleted", 0);
             List<Map<String, Object>> attractionViewSum = attractionMapper.selectMaps(attractionViewSumWrapper);
-            if (attractionViewSum != null && !attractionViewSum.isEmpty() && attractionViewSum.get(0).get("totalViews") != null) {
-                attractionViews = ((Number) attractionViewSum.get(0).get("totalViews")).longValue();
+            if (attractionViewSum != null && !attractionViewSum.isEmpty()) {
+                Map<String, Object> firstRow = attractionViewSum.get(0);
+                Object totalViewsObj = firstRow != null ? firstRow.get("totalViews") : null;
+                if (totalViewsObj != null) {
+                    attractionViews = ((Number) totalViewsObj).longValue();
+                }
             }
 
             Long totalViews = planViews + attractionViews;
@@ -1365,8 +1373,12 @@ public class StatisticsServiceImpl implements StatisticsService {
             viewWrapper.select("SUM(view_count) as totalViews");
             List<Map<String, Object>> viewList = travelPlanMapper.selectMaps(viewWrapper);
             Long totalViews = 0L;
-            if (viewList != null && !viewList.isEmpty() && viewList.get(0).get("totalViews") != null) {
-                totalViews = ((Number) viewList.get(0).get("totalViews")).longValue();
+            if (viewList != null && !viewList.isEmpty()) {
+                Map<String, Object> firstRow = viewList.get(0);
+                Object totalViewsObj = firstRow != null ? firstRow.get("totalViews") : null;
+                if (totalViewsObj != null) {
+                    totalViews = ((Number) totalViewsObj).longValue();
+                }
             }
             result.put("totalViews", totalViews);
 

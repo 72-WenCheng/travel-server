@@ -27,3 +27,20 @@ public interface GeoIpService {
     boolean isPrivateIp(String ipAddress);
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
