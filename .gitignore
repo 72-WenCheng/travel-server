@@ -1,3 +1,61 @@
+# ======================
+# 构建输出 / 依赖目录
+# ======================
 target/
-*.log
+build/
+out/
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle/
+**/build/
+
+# ======================
+# IDE & 编辑器
+# ======================
+
+# IntelliJ IDEA
 .idea/
+*.iml
+*.iws
+*.ipr
+
+# VS Code
+.vscode/
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+# ======================
+# 系统文件
+# ======================
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ======================
+# 日志 / 临时文件
+# ======================
+*.log
+*.tmp
+*.swp
+*.swo
+
+# ======================
+# Java 相关
+# ======================
+*.class
+*.war
+*.ear
+*.jar
+hs_err_pid*
+replay_pid*
